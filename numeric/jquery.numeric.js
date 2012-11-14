@@ -48,7 +48,8 @@
                    .data("numeric.callback", callback1)
                    .keypress($.fn.numeric.keypress)
                    .keyup($.fn.numeric.keyup)
-                   .blur($.fn.numeric.blur);
+                   .blur($.fn.numeric.blur)
+                   .change($.fn.numeric.blur);
     };
 
     function isHotKey(e) {
