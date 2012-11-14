@@ -2,7 +2,7 @@
  *
  * Copyright (c) 2006-2011 Sam Collett (http://www.texotela.co.uk)
  * based on code by http://www.texotela.co.uk/code/jquery/numeric/
- * updated by Ali Hmer Ali.Hmer@gmail.com (added handling of pasted non-numeric characters, added handling some other hot keys and added change function)
+ * updated by Ali Hmer Ali.Hmer@gmail.com (added handling of pasted non-numeric characters, added handling some other hot keys so that ctrl+a works fine)
  * Dual licensed under the MIT (http://www.opensource.org/licenses/mit-license.php)
  * and GPL (http://www.opensource.org/licenses/gpl-license.php) licenses.
  * 
@@ -21,7 +21,7 @@
     * @param    config      { decimal : "." , negative : true }
     * @param    callback     A function that runs if the number is not valid (fires onblur)
     * @author   Sam Collett (http://www.texotela.co.uk)
-    * @updated by Ali Hmer (added handling of pasted non-numeric characters, added handling some other hot keys and added change function)
+    * @updated by Ali Hmer (added handling of pasted non-numeric characters, added handling some other hot keys so that ctrl+a works fine)
     * @example  $(".numeric").numeric();
     * @example  $(".numeric").numeric(","); // use , as separater
     * @example  $(".numeric").numeric({ decimal : "," }); // use , as separator
@@ -48,11 +48,11 @@
                    .data("numeric.callback", callback1)
                    .keypress($.fn.numeric.keypress)
                    .keyup($.fn.numeric.keyup)
-                   .blur($.fn.numeric.blur)
-                   .change($.fn.numeric.change);
+                   .blur($.fn.numeric.blur);
     };
 
     function isHotKey(e) {
+        //alert(e.keyCode);
         var key = e.charCode ? e.charCode : e.keyCode ? e.keyCode : 0;
         // allow Ctrl+A
         if ((e.ctrlKey && key == 97 /* firefox */) || (e.ctrlKey && key == 65) /* opera */) return true;
@@ -80,6 +80,7 @@
     };
 
     $.fn.numeric.keypress = function (e) {
+        //alert(e.keyCode);
         if (isHotKey(e)) return true;
         // get decimal character and determine if negatives are allowed
         var decimal = $.data(this, "numeric.decimal");
@@ -145,43 +146,6 @@
             allow = true;
         }
         return allow;
-    };
-
-    $.fn.numeric.change = function (e, decimal) {
-        if (!hotkeys(e)) {
-            if (decimal == '.') {
-                inputControl($(this), 'decimal');
-            }
-            else {
-                inputControl($(this), 'int');
-            }
-        }
-    };
-
-    $.fn.numeric.inputControl = function (input, format) {
-        var value = input.val();
-        var values = value.split("");
-        var update = "";
-        var transition = "";
-        var expression = "";
-        var finalExpression = "";
-        if (format == 'int') {
-            expression = /^([0-9])$/;
-            finalExpression = /^([1-9][0-9]*)$/;
-        }
-        else if (format == 'decimal') {
-            expression = /(^\d+$)|(^\d+\.\d+$)|[,\.]/;
-            finalExpression = /^([1-9][0-9]*[,\.]?\d{0,9})$/;
-        }
-        for (id in values) {
-            if (expression.test(values[id]) == true && values[id] != '') {
-                transition += '' + values[id].replace(',', '.');
-                if (finalExpression.test(transition) == true) {
-                    update += '' + values[id].replace(',', '.');
-                }
-            }
-        }
-        input.val(update);
     };
 
     $.fn.numeric.keyup = function (e) {
@@ -258,17 +222,18 @@
         }
     };
 
-    //    $.fn.numeric.blur = function () {
-    //        var decimal = $.data(this, "numeric.decimal");
-    //        var callback = $.data(this, "numeric.callback");
-    //        var val = this.value;
-    //        if (val != "") {
-    //            var re = new RegExp("^\\d+$|\\d*" + decimal + "\\d+");
-    //            if (!re.exec(val)) {
-    //                callback.apply(this);
-    //            }
-    //        }
-    //    };
+    $.fn.numeric.blur = function () {
+        //alert(event.keyCode);
+        var decimal = $.data(this, "numeric.decimal");
+        var callback = $.data(this, "numeric.callback");
+        var val = this.value;
+        if (val != "") {
+            var re = new RegExp("^\\d+$|\\d*" + decimal + "\\d+");
+            if (!re.exec(val)) {
+                callback.apply(this);
+            }
+        }
+    };
 
     $.fn.removeNumeric = function () {
         return this.data("numeric.decimal", null).data("numeric.negative", null).data("numeric.callback", null).unbind("keypress", $.fn.numeric.keypress).unbind("blur", $.fn.numeric.blur);
